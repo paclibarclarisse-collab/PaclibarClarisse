@@ -1,11 +1,18 @@
 
+import os
 import sqlite3
 
-conn = sqlite3.connect("students.db")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE = os.path.join(BASE_DIR, "students.db")
+
+conn = sqlite3.connect(DATABASE)
 cursor = conn.cursor()
 
+# Recreate the table to reset the IDs
+cursor.execute("DROP TABLE IF EXISTS students")
+
 cursor.execute("""
-CREATE TABLE IF NOT EXISTS students (
+CREATE TABLE students (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     student_id TEXT NOT NULL,
     name TEXT NOT NULL,
@@ -14,8 +21,6 @@ CREATE TABLE IF NOT EXISTS students (
     section TEXT NOT NULL
 )
 """)
-
-cursor.execute("DELETE FROM students")
 
 students = [
     ("2026-00123", "Juan Dela Cruz", "BSIT", 1, "A"),
@@ -26,11 +31,12 @@ students = [
 ]
 
 cursor.executemany("""
-INSERT INTO students (student_id, name, program, year, section)
+INSERT INTO students
+(student_id, name, program, year, section)
 VALUES (?, ?, ?, ?, ?)
 """, students)
 
 conn.commit()
 conn.close()
 
-print("Database created successfully.")
+print("Database recreated successfully!")
