@@ -222,3 +222,79 @@
     </script>
 </body>
 </html>
+
+<hr>
+
+<h2>Laboratory Activity 7: Students from Database</h2>
+
+<button onclick="loadStudents()">Load Students</button>
+
+<div id="studentList"></div>
+
+<hr>
+
+<h2>Search Students by Program</h2>
+
+<input type="text" id="programInput" placeholder="Enter program, e.g. BSIT">
+<button onclick="loadByProgram()">Search Program</button>
+
+<div id="programList"></div>
+
+<script>
+function loadStudents() {
+    fetch('/students')
+        .then(response => response.json())
+        .then(data => {
+            let output = '';
+
+            data.forEach(student => {
+                output += `
+                    <p>
+                        <b>${student.student_id}</b> -
+                        ${student.name} |
+                        ${student.program} |
+                        Year ${student.year} |
+                        Section ${student.section}
+                    </p>
+                `;
+            });
+
+            document.getElementById('studentList').innerHTML =
+                output || '<p>No students found.</p>';
+        })
+        .catch(() => {
+            document.getElementById('studentList').innerHTML =
+                '<p>Unable to retrieve student records.</p>';
+        });
+}
+
+function loadByProgram() {
+    const program = document.getElementById('programInput').value.trim();
+
+    fetch('/students/program/' + encodeURIComponent(program))
+        .then(response => response.json())
+        .then(data => {
+            let output = '';
+
+            data.forEach(student => {
+                output += `
+                    <p>
+                        <b>${student.student_id}</b> -
+                        ${student.name} |
+                        ${student.program} |
+                        Year ${student.year} |
+                        Section ${student.section}
+                    </p>
+                `;
+            });
+
+            document.getElementById('programList').innerHTML =
+                output || '<p>No students found for this program.</p>';
+        })
+        .catch(() => {
+            document.getElementById('programList').innerHTML =
+                '<p>Unable to retrieve student records.</p>';
+        });
+}
+</script>
+</body>
