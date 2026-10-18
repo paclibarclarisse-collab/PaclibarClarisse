@@ -1,12 +1,12 @@
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 
 app = Flask(__name__)
 
 
 @app.route('/')
 def home():
-    return "Welcome to Clarisse's Flask API!"
+    return render_template('index.html')
 
 
 @app.route('/student')
@@ -28,7 +28,6 @@ def say_hello():
     })
 
 
-# NEW ENDPOINT 1
 @app.route('/subjects')
 def get_subjects():
     return jsonify({
@@ -42,7 +41,6 @@ def get_subjects():
     })
 
 
-# NEW ENDPOINT 2
 @app.route('/study-hours')
 def study_hours():
     subject = request.args.get('subject', 'Python')

@@ -1,0 +1,224 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student API Interface</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 750px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f4f7fb;
+            color: #243247;
+        }
+
+        h1 {
+            text-align: center;
+            color: #174a7e;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            margin: 20px 0;
+            border-radius: 12px;
+            border: 1px solid #d6e1ee;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+        }
+
+        h2 {
+            color: #174a7e;
+        }
+
+        button {
+            padding: 10px 16px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 6px;
+            background: #174a7e;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2468a8;
+        }
+
+        input {
+            padding: 10px;
+            width: 85%;
+            max-width: 300px;
+            border: 1px solid #b8c7d8;
+            border-radius: 6px;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 12px;
+            background: #f0f6fc;
+            border-radius: 6px;
+            overflow-wrap: anywhere;
+        }
+
+        footer {
+            text-align: center;
+            color: #66758a;
+            margin-top: 25px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Student API Interface</h1>
+    <p style="text-align:center">
+        Welcome! Explore the information provided by my Flask API.
+    </p>
+
+    <div class="card">
+        <h2>Student Information</h2>
+        <button onclick="loadStudent()">
+            Load Student Information
+        </button>
+        <div id="result" class="result">
+            Student information will appear here.
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Greeting API</h2>
+        <input type="text" id="nameInput"
+               placeholder="Enter your first name">
+        <br>
+        <button onclick="sayHello()">Say Hello</button>
+        <p id="greeting" class="result"></p>
+    </div>
+
+    <div class="card">
+        <h2>My Subjects API</h2>
+        <p>View my student information and enrolled subjects.</p>
+        <button onclick="loadSubjects()">Load My Subjects</button>
+        <div id="subjectsResult" class="result">
+            Click the button to load your subjects.
+        </div>
+    </div>
+
+    <footer>
+        Laboratory Activity 6 | Flask API Web Interface
+    </footer>
+
+    <script>
+        async function loadStudent() {
+            const result = document.getElementById("result");
+            result.textContent = "Loading student information...";
+
+            try {
+                const response = await fetch("/student");
+
+                if (!response.ok) {
+                    throw new Error("Request failed");
+                }
+
+                const data = await response.json();
+                result.replaceChildren();
+
+                const fields = [
+                    ["Student ID", data.student_id],
+                    ["Name", data.name],
+                    ["Program", data.program],
+                    ["Year", data.year],
+                    ["Section", data.section]
+                ];
+
+                fields.forEach(function(field) {
+                    const p = document.createElement("p");
+                    const label = document.createElement("strong");
+
+                    label.textContent = field[0] + ": ";
+                    p.appendChild(label);
+                    p.appendChild(
+                        document.createTextNode(
+                            field[1] ?? "Not provided"
+                        )
+                    );
+                    result.appendChild(p);
+                });
+            } catch (error) {
+                result.textContent =
+                    "Unable to retrieve student information.";
+            }
+        }
+
+        async function sayHello() {
+            const name =
+                document.getElementById("nameInput").value.trim();
+            const greeting = document.getElementById("greeting");
+
+            greeting.textContent = "Loading greeting...";
+
+            try {
+                const response = await fetch(
+                    "/hello?name=" + encodeURIComponent(name || "Student")
+                );
+
+                if (!response.ok) {
+                    throw new Error("Request failed");
+                }
+
+                const data = await response.json();
+                greeting.textContent = data.message;
+            } catch (error) {
+                greeting.textContent = "Unable to retrieve greeting.";
+            }
+        }
+
+        async function loadSubjects() {
+            const output =
+                document.getElementById("subjectsResult");
+
+            output.textContent = "Loading subjects...";
+
+            try {
+                const response = await fetch("/subjects");
+
+                if (!response.ok) {
+                    throw new Error("Request failed");
+                }
+
+                const data = await response.json();
+                output.replaceChildren();
+
+                const student = document.createElement("p");
+                student.textContent =
+                    "Student: " + (data.student || "Not provided");
+                output.appendChild(student);
+
+                const semester = document.createElement("p");
+                semester.textContent =
+                    "Semester: " + (data.semester || "Not provided");
+                output.appendChild(semester);
+
+                const heading = document.createElement("h3");
+                heading.textContent = "Subjects:";
+                output.appendChild(heading);
+
+                const list = document.createElement("ul");
+
+                (data.subjects || []).forEach(function(subject) {
+                    const item = document.createElement("li");
+                    item.textContent = subject;
+                    list.appendChild(item);
+                });
+
+                output.appendChild(list);
+            } catch (error) {
+                output.textContent =
+                    "Unable to retrieve subjects. Check the /subjects endpoint.";
+            }
+        }
+    </script>
+</body>
+</html>
