@@ -655,14 +655,56 @@
 
                 output.appendChild(record);
 
+                // Save button
+                const saveButton = document.createElement("button");
+                saveButton.textContent = "Save to My Records";
+                saveButton.onclick = saveClassmateStudent;
+                output.appendChild(saveButton);
+
                 const note = document.createElement("p");
                 note.textContent =
-                    "Source: HApee Malunes's Flask API (read-only student information).";
+                    "Source: HApee Malunes's Flask API.";
                 output.appendChild(note);
 
             } catch (error) {
                 output.textContent =
                     "Unable to retrieve classmate's information: " + error.message;
+            }
+        }
+
+        // Activity 8: Save classmate's record to my database
+        async function saveClassmateStudent() {
+            const output = document.getElementById("classmateList");
+            const message = document.createElement("p");
+
+            message.textContent = "Saving classmate's record...";
+            output.appendChild(message);
+
+            try {
+                const response = await fetch("/api/classmate-students/save", {
+                    method: "POST"
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    message.textContent =
+                        "SUCCESS: " + data.message;
+
+                    await loadStudents();
+
+                } else if (response.status === 409) {
+                    message.textContent =
+                        "NOTICE: " + data.message;
+
+                } else {
+                    message.textContent =
+                        "ERROR: " + (data.details || data.error || "Unable to save record.");
+                }
+
+            } catch (error) {
+                message.textContent =
+                    "Unable to save classmate's record: " + error.message;
             }
         }
     </script>

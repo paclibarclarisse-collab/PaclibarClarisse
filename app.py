@@ -223,5 +223,60 @@ def get_classmate_students():
         }), 500
 
 
+# Activity 8: SAVE CLASSMATE'S RECORD TO MY DATABASE
+@app.route('/api/classmate-students/save', methods=['POST'])
+def save_classmate_student():
+    classmate_url = "https://flask-malunes-act4.onrender.com/student"
+
+    try:
+        # Retrieve classmate's information
+        with urlopen(classmate_url, timeout=30) as response:
+            student = json.loads(
+                response.read().decode('utf-8')
+            )
+
+        # Check if the student already exists
+        conn = get_db_connection()
+
+        existing = conn.execute(
+            'SELECT id FROM students WHERE student_id = ?',
+            (student['student_id'],)
+        ).fetchone()
+
+        if existing:
+            conn.close()
+            return jsonify({
+                "message": "This student is already saved in your database."
+            }), 409
+
+        # Save classmate's information
+        conn.execute(
+            """INSERT INTO students
+            (student_id, name, program, year, section)
+            VALUES (?, ?, ?, ?, ?)""",
+            (
+                student['student_id'],
+                student['name'],
+                student['program'],
+                student['year'],
+                student['section']
+            )
+        )
+
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+            "message": "Classmate's record successfully saved!",
+            "student": student
+        }), 201
+
+    except Exception as error:
+        return jsonify({
+            "error": "Unable to save classmate's record",
+            "details": str(error)
+        }), 500
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
