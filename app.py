@@ -1,5 +1,8 @@
 
 import sqlite3
+import json
+from urllib.request import urlopen
+
 from flask import Flask, jsonify, request, render_template
 
 app = Flask(__name__)
@@ -198,6 +201,26 @@ def delete_student(id):
     conn.close()
 
     return jsonify({"message": "Student deleted"})
+
+
+# Activity 8: RETRIEVE CLASSMATE'S RECORDS
+@app.route('/api/classmate-students', methods=['GET'])
+def get_classmate_students():
+    classmate_url = "https://flask-malunes-act4.onrender.com/student"
+
+    try:
+        with urlopen(classmate_url, timeout=30) as response:
+            students = json.loads(
+                response.read().decode('utf-8')
+            )
+
+        return jsonify(students)
+
+    except Exception as error:
+        return jsonify({
+            "error": "Unable to retrieve classmate records",
+            "details": str(error)
+        }), 500
 
 
 if __name__ == '__main__':

@@ -99,6 +99,7 @@
 </head>
 
 <body>
+
     <h1>Student API Interface</h1>
     <p style="text-align:center">
         Welcome! Explore the information provided by my Flask API.
@@ -153,16 +154,11 @@
         <h2>Manage Student Records (CRUD)</h2>
         <p>Add, view, edit, and delete student records in your database.</p>
 
-        <input type="text" id="studentId" placeholder="Student ID">
-        <br>
-        <input type="text" id="studentName" placeholder="Full Name">
-        <br>
-        <input type="text" id="studentProgram" placeholder="Program (e.g. BSIT)">
-        <br>
-        <input type="number" id="studentYear" placeholder="Year">
-        <br>
-        <input type="text" id="studentSection" placeholder="Section">
-        <br>
+        <input type="text" id="studentId" placeholder="Student ID"><br>
+        <input type="text" id="studentName" placeholder="Full Name"><br>
+        <input type="text" id="studentProgram" placeholder="Program (e.g. BSIT)"><br>
+        <input type="number" id="studentYear" placeholder="Year"><br>
+        <input type="text" id="studentSection" placeholder="Section"><br>
 
         <button onclick="saveStudent()">Add Student</button>
         <button onclick="updateStudent()" id="updateButton" style="display:none">
@@ -193,8 +189,18 @@
         </div>
     </div>
 
+    <!-- Activity 8: Classmate Records -->
+    <div class="card">
+        <h2>Classmate's Records</h2>
+        <p>Retrieve student information from another student's Flask API.</p>
+        <button onclick="loadClassmateStudents()">Load Classmate's Records</button>
+        <div id="classmateList" class="result">
+            Click the button to retrieve your classmate's information.
+        </div>
+    </div>
+
     <footer>
-        Laboratory Activity 8 | CRUD Web Application
+        Laboratory Activity 8 | CRUD Web Application and System-to-System Integration
     </footer>
 
     <script>
@@ -607,6 +613,59 @@
                 message.textContent = "Unable to delete student.";
             }
         }
+
+        // Activity 8: Retrieve classmate's information
+        async function loadClassmateStudents() {
+            const output = document.getElementById("classmateList");
+            output.textContent = "Retrieving classmate's information...";
+
+            try {
+                const response = await fetch("/api/classmate-students");
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Unable to retrieve records.");
+                }
+
+                output.replaceChildren();
+
+                const record = document.createElement("div");
+                record.className = "student-record";
+
+                const fields = [
+                    ["Student ID", data.student_id],
+                    ["Name", data.name],
+                    ["Program", data.program],
+                    ["Year", data.year],
+                    ["Section", data.section]
+                ];
+
+                fields.forEach(function(field) {
+                    const p = document.createElement("p");
+                    const label = document.createElement("strong");
+
+                    label.textContent = field[0] + ": ";
+                    p.appendChild(label);
+                    p.appendChild(
+                        document.createTextNode(field[1] ?? "Not provided")
+                    );
+
+                    record.appendChild(p);
+                });
+
+                output.appendChild(record);
+
+                const note = document.createElement("p");
+                note.textContent =
+                    "Source: HApee Malunes's Flask API (read-only student information).";
+                output.appendChild(note);
+
+            } catch (error) {
+                output.textContent =
+                    "Unable to retrieve classmate's information: " + error.message;
+            }
+        }
     </script>
+
 </body>
 </html>
