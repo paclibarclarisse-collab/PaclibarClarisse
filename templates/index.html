@@ -80,9 +80,7 @@
 
     <div class="card">
         <h2>Student Information</h2>
-        <button onclick="loadStudent()">
-            Load Student Information
-        </button>
+        <button onclick="loadStudent()">Load Student Information</button>
         <div id="result" class="result">
             Student information will appear here.
         </div>
@@ -90,8 +88,7 @@
 
     <div class="card">
         <h2>Greeting API</h2>
-        <input type="text" id="nameInput"
-               placeholder="Enter your first name">
+        <input type="text" id="nameInput" placeholder="Enter your first name">
         <br>
         <button onclick="sayHello()">Say Hello</button>
         <p id="greeting" class="result"></p>
@@ -106,8 +103,27 @@
         </div>
     </div>
 
+    <div class="card">
+        <h2>Students from Database</h2>
+        <p>View all student records stored in SQLite.</p>
+        <button onclick="loadStudents()">Load Students</button>
+        <div id="studentList" class="result">
+            Student records will appear here.
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Search Students by Program</h2>
+        <input type="text" id="programInput" placeholder="Enter program, e.g. BSIT">
+        <br>
+        <button onclick="loadByProgram()">Search Program</button>
+        <div id="programList" class="result">
+            Program records will appear here.
+        </div>
+    </div>
+
     <footer>
-        Laboratory Activity 6 | Flask API Web Interface
+        Laboratory Activity 7 | Flask API with SQLite Database
     </footer>
 
     <script>
@@ -117,10 +133,7 @@
 
             try {
                 const response = await fetch("/student");
-
-                if (!response.ok) {
-                    throw new Error("Request failed");
-                }
+                if (!response.ok) throw new Error();
 
                 const data = await response.json();
                 result.replaceChildren();
@@ -136,37 +149,26 @@
                 fields.forEach(function(field) {
                     const p = document.createElement("p");
                     const label = document.createElement("strong");
-
                     label.textContent = field[0] + ": ";
                     p.appendChild(label);
-                    p.appendChild(
-                        document.createTextNode(
-                            field[1] ?? "Not provided"
-                        )
-                    );
+                    p.appendChild(document.createTextNode(field[1] ?? "Not provided"));
                     result.appendChild(p);
                 });
             } catch (error) {
-                result.textContent =
-                    "Unable to retrieve student information.";
+                result.textContent = "Unable to retrieve student information.";
             }
         }
 
         async function sayHello() {
-            const name =
-                document.getElementById("nameInput").value.trim();
+            const name = document.getElementById("nameInput").value.trim();
             const greeting = document.getElementById("greeting");
-
             greeting.textContent = "Loading greeting...";
 
             try {
                 const response = await fetch(
                     "/hello?name=" + encodeURIComponent(name || "Student")
                 );
-
-                if (!response.ok) {
-                    throw new Error("Request failed");
-                }
+                if (!response.ok) throw new Error();
 
                 const data = await response.json();
                 greeting.textContent = data.message;
@@ -176,29 +178,22 @@
         }
 
         async function loadSubjects() {
-            const output =
-                document.getElementById("subjectsResult");
-
+            const output = document.getElementById("subjectsResult");
             output.textContent = "Loading subjects...";
 
             try {
                 const response = await fetch("/subjects");
-
-                if (!response.ok) {
-                    throw new Error("Request failed");
-                }
+                if (!response.ok) throw new Error();
 
                 const data = await response.json();
                 output.replaceChildren();
 
                 const student = document.createElement("p");
-                student.textContent =
-                    "Student: " + (data.student || "Not provided");
+                student.textContent = "Student: " + (data.student || "Not provided");
                 output.appendChild(student);
 
                 const semester = document.createElement("p");
-                semester.textContent =
-                    "Semester: " + (data.semester || "Not provided");
+                semester.textContent = "Semester: " + (data.semester || "Not provided");
                 output.appendChild(semester);
 
                 const heading = document.createElement("h3");
@@ -215,86 +210,80 @@
 
                 output.appendChild(list);
             } catch (error) {
-                output.textContent =
-                    "Unable to retrieve subjects. Check the /subjects endpoint.";
+                output.textContent = "Unable to retrieve subjects.";
+            }
+        }
+
+        async function loadStudents() {
+            const output = document.getElementById("studentList");
+            output.textContent = "Loading student records...";
+
+            try {
+                const response = await fetch("/students");
+                if (!response.ok) throw new Error();
+
+                const data = await response.json();
+                output.replaceChildren();
+
+                if (data.length === 0) {
+                    output.textContent = "No students found.";
+                    return;
+                }
+
+                data.forEach(function(student) {
+                    const p = document.createElement("p");
+                    p.textContent =
+                        student.student_id + " - " +
+                        student.name + " | " +
+                        student.program + " | Year " +
+                        student.year + " | Section " +
+                        student.section;
+                    output.appendChild(p);
+                });
+            } catch (error) {
+                output.textContent = "Unable to retrieve student records.";
+            }
+        }
+
+        async function loadByProgram() {
+            const program = document.getElementById("programInput").value.trim();
+            const output = document.getElementById("programList");
+
+            if (!program) {
+                output.textContent = "Please enter a program.";
+                return;
+            }
+
+            output.textContent = "Searching students...";
+
+            try {
+                const response = await fetch(
+                    "/students/program/" + encodeURIComponent(program)
+                );
+                if (!response.ok) throw new Error();
+
+                const data = await response.json();
+                output.replaceChildren();
+
+                if (data.length === 0) {
+                    output.textContent = "No students found for this program.";
+                    return;
+                }
+
+                data.forEach(function(student) {
+                    const p = document.createElement("p");
+                    p.textContent =
+                        student.student_id + " - " +
+                        student.name + " | " +
+                        student.program + " | Year " +
+                        student.year + " | Section " +
+                        student.section;
+                    output.appendChild(p);
+                });
+            } catch (error) {
+                output.textContent = "Unable to retrieve student records.";
             }
         }
     </script>
 </body>
 </html>
-
-<hr>
-
-<h2>Laboratory Activity 7: Students from Database</h2>
-
-<button onclick="loadStudents()">Load Students</button>
-
-<div id="studentList"></div>
-
-<hr>
-
-<h2>Search Students by Program</h2>
-
-<input type="text" id="programInput" placeholder="Enter program, e.g. BSIT">
-<button onclick="loadByProgram()">Search Program</button>
-
-<div id="programList"></div>
-
-<script>
-function loadStudents() {
-    fetch('/students')
-        .then(response => response.json())
-        .then(data => {
-            let output = '';
-
-            data.forEach(student => {
-                output += `
-                    <p>
-                        <b>${student.student_id}</b> -
-                        ${student.name} |
-                        ${student.program} |
-                        Year ${student.year} |
-                        Section ${student.section}
-                    </p>
-                `;
-            });
-
-            document.getElementById('studentList').innerHTML =
-                output || '<p>No students found.</p>';
-        })
-        .catch(() => {
-            document.getElementById('studentList').innerHTML =
-                '<p>Unable to retrieve student records.</p>';
-        });
-}
-
-function loadByProgram() {
-    const program = document.getElementById('programInput').value.trim();
-
-    fetch('/students/program/' + encodeURIComponent(program))
-        .then(response => response.json())
-        .then(data => {
-            let output = '';
-
-            data.forEach(student => {
-                output += `
-                    <p>
-                        <b>${student.student_id}</b> -
-                        ${student.name} |
-                        ${student.program} |
-                        Year ${student.year} |
-                        Section ${student.section}
-                    </p>
-                `;
-            });
-
-            document.getElementById('programList').innerHTML =
-                output || '<p>No students found for this program.</p>';
-        })
-        .catch(() => {
-            document.getElementById('programList').innerHTML =
-                '<p>Unable to retrieve student records.</p>';
-        });
-}
-</script>
-</body>
